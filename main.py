@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse
 
 app = FastAPI()
 
-locations: list = [
+locations: list[dict] = [
     {
         "id": 1,
         "name": "London",
