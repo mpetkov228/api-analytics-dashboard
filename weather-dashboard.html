@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clearline — Weather Dashboard</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FAFAF7;
+      --surface: #FFFFFF;
+      --ink: #1B2430;
+      --muted: #6B7280;
+      --line: #E6E4DE;
+
+      --sky: #2F80D6;
+      --sky-deep: #1E5FAE;
+      --amber: #F2A93B;
+      --coral: #EC6A5E;
+      --teal: #22A6A0;
+      --violet: #7C5CFC;
+      --leaf: #3FA66B;
+
+      --good: #3FA66B;
+      --moderate: #F2A93B;
+      --unhealthy: #EC6A5E;
+
+      --sidebar-w: 264px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .mono {
+      font-family: 'IBM Plex Mono', monospace;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .eyebrow {
+      font-family: 'IBM Plex Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-size: .7rem;
+      color: var(--muted);
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    /* ===================== APP SHELL ===================== */
+    .app-shell {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .main-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* ===================== SIDEBAR ===================== */
+    .sidebar {
+      width: var(--sidebar-w);
+      flex: 0 0 var(--sidebar-w);
+      background: linear-gradient(160deg, #2A2E6B 0%, #33509C 55%, #2C86B8 100%);
+      color: #fff;
+      padding: 1.4rem 1.15rem;
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 80;
+    }
+
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: .55rem;
+      font-weight: 700;
+      font-size: 1.08rem;
+      letter-spacing: -.01em;
+      padding: .3rem .35rem .9rem;
+    }
+
+    .sidebar-brand .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--amber);
+      box-shadow: 0 0 0 4px rgba(242, 169, 59, .25);
+    }
+
+    .sidebar-section-label {
+      font-family: 'IBM Plex Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-size: .63rem;
+      color: rgba(255, 255, 255, .5);
+      padding: .9rem .5rem .35rem;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: .7rem;
+      padding: .55rem .55rem;
+      border-radius: 10px;
+      color: rgba(255, 255, 255, .82);
+      font-size: .87rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background .15s ease, color .15s ease;
+      position: relative;
+    }
+
+    .nav-item:hover {
+      background: rgba(255, 255, 255, .09);
+      color: #fff;
+    }
+
+    .nav-item.active {
+      background: rgba(255, 255, 255, .16);
+      color: #fff;
+    }
+
+    .nav-item .nav-icon {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 18px;
+    }
+
+    .nav-item .soon-badge {
+      margin-left: auto;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .6rem;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, .15);
+      padding: .15rem .4rem;
+      border-radius: 6px;
+      color: rgba(255, 255, 255, .75);
+    }
+
+    .sidebar-divider {
+      height: 1px;
+      background: rgba(255, 255, 255, .14);
+      margin: .9rem .1rem;
+    }
+
+    .quick-list {
+      display: flex;
+      flex-direction: column;
+      gap: .25rem;
+    }
+
+    .quick-item {
+      display: flex;
+      align-items: center;
+      gap: .55rem;
+      padding: .4rem .55rem;
+      border-radius: 9px;
+      cursor: pointer;
+      color: rgba(255, 255, 255, .85);
+      font-size: .82rem;
+      transition: background .15s ease;
+    }
+
+    .quick-item:hover {
+      background: rgba(255, 255, 255, .09);
+    }
+
+    .quick-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex: 0 0 8px;
+    }
+
+    .quick-item .qname {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .quick-item .qtemp {
+      font-family: 'IBM Plex Mono', monospace;
+      color: rgba(255, 255, 255, .6);
+      font-size: .76rem;
+    }
+
+    .quick-empty {
+      color: rgba(255, 255, 255, .45);
+      font-size: .78rem;
+      padding: .4rem .55rem;
+    }
+
+    .sidebar-spacer {
+      flex: 1;
+    }
+
+    .account-box {
+      border-top: 1px solid rgba(255, 255, 255, .14);
+      padding-top: 1rem;
+      margin-top: .5rem;
+    }
+
+    .account-row {
+      display: flex;
+      align-items: center;
+      gap: .65rem;
+      margin-bottom: .8rem;
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: .8rem;
+      flex: 0 0 36px;
+      background: rgba(255, 255, 255, .16);
+      color: #fff;
+    }
+
+    .avatar.filled {
+      background: linear-gradient(135deg, var(--amber), var(--coral));
+    }
+
+    .account-name {
+      font-size: .85rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .account-sub {
+      font-size: .72rem;
+      color: rgba(255, 255, 255, .6);
+    }
+
+    .btn-login {
+      width: 100%;
+      border: none;
+      border-radius: 10px;
+      background: #fff;
+      color: var(--sky-deep);
+      font-weight: 600;
+      font-size: .85rem;
+      padding: .55rem;
+      transition: transform .1s ease;
+    }
+
+    .btn-login:hover {
+      transform: translateY(-1px);
+    }
+
+    .link-logout {
+      font-size: .76rem;
+      color: rgba(255, 255, 255, .65);
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .link-logout:hover {
+      color: #fff;
+    }
+
+    /* mobile sidebar behavior */
+    .sidebar-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(20, 24, 35, .4);
+      z-index: 150;
+    }
+
+    .sidebar-backdrop.show {
+      display: block;
+    }
+
+    @media (max-width: 991.98px) {
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100vh;
+        transform: translateX(-100%);
+        transition: transform .25s ease;
+        z-index: 200;
+        box-shadow: 0 0 40px rgba(0, 0, 0, .25);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+    }
+
+    .mobile-topbar {
+      border-bottom: 1px solid var(--line);
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      padding: .85rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: .7rem;
+    }
+
+    .hamburger-btn {
+      border: 1px solid var(--line);
+      background: var(--surface);
+      border-radius: 9px;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--ink);
+      flex: 0 0 36px;
+    }
+
+    .brand-mobile {
+      font-weight: 700;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+    }
+
+    .brand-mobile .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--sky);
+    }
+
+    /* ===================== SEARCH ===================== */
+    .search-wrap {
+      position: relative;
+    }
+
+    .search-input {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: .7rem 1rem .7rem 2.6rem;
+      font-size: .95rem;
+      background: var(--surface);
+      width: 100%;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--sky);
+      box-shadow: 0 0 0 3px rgba(47, 128, 214, .14);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: .85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    .search-results {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(100% + 6px);
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(27, 36, 48, .1);
+      overflow: hidden;
+      z-index: 60;
+      display: none;
+    }
+
+    .search-results.show {
+      display: block;
+    }
+
+    .search-result-item {
+      padding: .65rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      font-size: .9rem;
+    }
+
+    .search-result-item:hover {
+      background: var(--bg);
+    }
+
+    .search-result-item+.search-result-item {
+      border-top: 1px solid var(--line);
+    }
+
+    .search-result-item .country {
+      color: var(--muted);
+      font-size: .78rem;
+    }
+
+    /* ===================== CARDS ===================== */
+    .card-flat {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+
+    .recent-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 1.1rem;
+      cursor: pointer;
+      transition: box-shadow .15s ease, transform .15s ease, border-color .15s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .recent-card:hover {
+      box-shadow: 0 10px 26px rgba(27, 36, 48, .1);
+      transform: translateY(-2px);
+    }
+
+    .recent-card .icon-wrap {
+      width: 42px;
+      height: 42px;
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+
+    .recent-card .temp {
+      font-size: 1.7rem;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    .remove-btn {
+      position: absolute;
+      top: .6rem;
+      right: .6rem;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--ink);
+      background: rgba(255, 255, 255, .6);
+      border: none;
+      opacity: 0;
+      transition: opacity .15s ease, background .15s ease;
+    }
+
+    .recent-card:hover .remove-btn {
+      opacity: 1;
+    }
+
+    .remove-btn:hover {
+      background: #fff;
+    }
+
+    .empty-state {
+      border: 1px dashed var(--line);
+      border-radius: 14px;
+      padding: 2.4rem 1.5rem;
+      text-align: center;
+      color: var(--muted);
+      background: var(--surface);
+    }
+
+    /* ===================== HOME HERO ===================== */
+    .hero-home {
+      padding: 2.6rem 0 2rem;
+    }
+
+    .hero-home h1 {
+      font-size: 2.05rem;
+      font-weight: 700;
+      letter-spacing: -.02em;
+    }
+
+    .hero-home p {
+      color: var(--muted);
+    }
+
+    .home-container {
+      padding: 0 1.75rem;
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    /* ===================== LOCATION PAGE ===================== */
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      color: var(--muted);
+      font-size: .88rem;
+      font-weight: 500;
+    }
+
+    .back-link:hover {
+      color: var(--ink);
+    }
+
+    .sky-band {
+      border-radius: 18px;
+      padding: 2.2rem 2rem;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      color: #fff;
+    }
+
+    .sky-band .place-name {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -.01em;
+    }
+
+    .sky-band .big-temp {
+      font-size: 5rem;
+      font-weight: 600;
+      line-height: 1;
+      letter-spacing: -.02em;
+    }
+
+    .sky-band .condition-text {
+      font-size: 1.05rem;
+      opacity: .92;
+    }
+
+    .sky-band .eyebrow-light {
+      font-family: 'IBM Plex Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-size: .7rem;
+      opacity: .75;
+    }
+
+    .sky-band .icon-xl {
+      width: 88px;
+      height: 88px;
+      opacity: .95;
+    }
+
+    .stat-tile {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: .9rem 1rem;
+    }
+
+    .stat-icon-chip {
+      width: 30px;
+      height: 30px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+
+    .stat-tile .stat-label {
+      font-size: .68rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-family: 'IBM Plex Mono', monospace;
+      margin-top: .5rem;
+    }
+
+    .stat-tile .stat-value {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-top: .1rem;
+    }
+
+    .section-title {
+      font-size: .95rem;
+      font-weight: 600;
+      letter-spacing: -.01em;
+    }
+
+    .hourly-scroll {
+      display: flex;
+      gap: .6rem;
+      overflow-x: auto;
+      padding-bottom: .4rem;
+    }
+
+    .hourly-scroll::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .hourly-scroll::-webkit-scrollbar-thumb {
+      background: var(--line);
+      border-radius: 6px;
+    }
+
+    .hour-card {
+      flex: 0 0 auto;
+      width: 78px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: .75rem .5rem;
+      text-align: center;
+    }
+
+    .hour-card .time {
+      font-size: .72rem;
+      color: var(--muted);
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .hour-card .icon-mini {
+      width: 26px;
+      height: 26px;
+      margin: .4rem auto 0;
+    }
+
+    .hour-card .temp {
+      font-weight: 600;
+      margin-top: .35rem;
+      font-size: .95rem;
+    }
+
+    .day-row {
+      display: flex;
+      align-items: center;
+      gap: .9rem;
+      padding: .7rem .2rem;
+    }
+
+    .day-row+.day-row {
+      border-top: 1px solid var(--line);
+    }
+
+    .day-row .day-name {
+      width: 84px;
+      font-weight: 500;
+      font-size: .88rem;
+    }
+
+    .day-row .day-cond {
+      flex: 0 0 26px;
+      width: 26px;
+      height: 26px;
+    }
+
+    .day-row .range-bar {
+      flex: 1;
+      height: 5px;
+      background: var(--line);
+      border-radius: 6px;
+      position: relative;
+      margin: 0 .6rem;
+    }
+
+    .day-row .range-fill {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, var(--sky), var(--amber));
+      border-radius: 6px;
+    }
+
+    .day-row .lo {
+      color: var(--muted);
+      width: 34px;
+      text-align: right;
+      font-size: .85rem;
+    }
+
+    .day-row .hi {
+      width: 34px;
+      text-align: right;
+      font-weight: 600;
+      font-size: .85rem;
+    }
+
+    .day-row .pop {
+      width: 44px;
+      text-align: right;
+      color: var(--sky);
+      font-size: .78rem;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .aqi-card {
+      text-align: center;
+    }
+
+    .aqi-value {
+      font-size: 2.4rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .aqi-label {
+      font-weight: 600;
+      margin-top: .25rem;
+    }
+
+    .map-placeholder {
+      border: 1px dashed var(--line);
+      border-radius: 14px;
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      background: repeating-linear-gradient(45deg, rgba(47, 128, 214, 0.03) 0 10px, transparent 10px 20px);
+    }
+
+    #locationView {
+      display: none;
+    }
+
+    footer.app-footer {
+      color: var(--muted);
+      font-size: .8rem;
+      padding: 2rem 0 3rem;
+      text-align: center;
+    }
+
+    /* ===================== LOGIN MODAL ===================== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(27, 36, 48, .45);
+      z-index: 300;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal-box {
+      background: #fff;
+      border-radius: 16px;
+      padding: 1.9rem;
+      max-width: 360px;
+      width: 100%;
+      position: relative;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: .9rem;
+      right: .9rem;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: none;
+      background: var(--bg);
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-close:hover {
+      background: var(--line);
+      color: var(--ink);
+    }
+
+    .modal-title {
+      font-weight: 700;
+      font-size: 1.15rem;
+      margin-bottom: .2rem;
+    }
+
+    .modal-sub {
+      color: var(--muted);
+      font-size: .85rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .form-label-sm {
+      font-size: .78rem;
+      font-weight: 500;
+      color: var(--ink);
+      margin-bottom: .3rem;
+    }
+
+    .form-control-flat {
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      padding: .55rem .8rem;
+      font-size: .9rem;
+      width: 100%;
+      margin-bottom: .9rem;
+    }
+
+    .form-control-flat:focus {
+      outline: none;
+      border-color: var(--sky);
+      box-shadow: 0 0 0 3px rgba(47, 128, 214, .12);
+    }
+
+    .btn-submit {
+      width: 100%;
+      border: none;
+      border-radius: 10px;
+      background: var(--sky);
+      color: #fff;
+      font-weight: 600;
+      font-size: .9rem;
+      padding: .6rem;
+    }
+
+    .btn-submit:hover {
+      background: var(--sky-deep);
+    }
+
+    .modal-note {
+      font-size: .72rem;
+      color: var(--muted);
+      text-align: center;
+      margin-top: .9rem;
+    }
+
+    @media (max-width:576px) {
+      .sky-band .big-temp {
+        font-size: 3.4rem;
+      }
+
+      .sky-band .icon-xl {
+        width: 56px;
+        height: 56px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="app-shell">
+
+    <!-- ============ SIDEBAR ============ -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <span class="dot"></span> Clearline
+      </div>
+
+      <div class="sidebar-section-label">Navigate</div>
+      <div class="nav-item active" id="navDashboard" onclick="navClick('dashboard')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 10.5 12 3l9 7.5"></path>
+          <path d="M5 9.5V21h14V9.5"></path>
+        </svg>
+        Dashboard
+      </div>
+      <div class="nav-item" id="navSaved" onclick="navClick('saved')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 3.5h12v18l-6-4-6 4v-18z"></path>
+        </svg>
+        Saved Locations
+      </div>
+      <div class="nav-item" id="navMaps" onclick="navClick('maps')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 4 3 6.5v14L9 18l6 2.5 6-2.5v-14L15 6.5 9 4z"></path>
+          <line x1="9" y1="4" x2="9" y2="18"></line>
+          <line x1="15" y1="6.5" x2="15" y2="20.5"></line>
+        </svg>
+        Weather Maps
+        <span class="soon-badge">Soon</span>
+      </div>
+      <div class="nav-item" id="navAlerts" onclick="navClick('alerts')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 10a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 14 6 10z"></path>
+          <path d="M10 19a2 2 0 0 0 4 0"></path>
+        </svg>
+        Alerts
+        <span class="soon-badge">Soon</span>
+      </div>
+      <div class="nav-item" id="navSettings" onclick="navClick('settings')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+          stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path
+            d="M19.4 13.5a1.7 1.7 0 0 0 .34 1.9l.06.06a2 2 0 1 1-2.9 2.9l-.06-.06a1.7 1.7 0 0 0-1.9-.34 1.7 1.7 0 0 0-1 1.55V19.6a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.55 1.7 1.7 0 0 0-1.9.34l-.06.06a2 2 0 1 1-2.9-2.9l.06-.06a1.7 1.7 0 0 0 .34-1.9 1.7 1.7 0 0 0-1.55-1H4.4a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.55-1.1 1.7 1.7 0 0 0-.34-1.9l-.06-.06a2 2 0 1 1 2.9-2.9l.06.06a1.7 1.7 0 0 0 1.9.34H10.5a1.7 1.7 0 0 0 1-1.55V4.4a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.9-.34l.06-.06a2 2 0 1 1 2.9 2.9l-.06.06a1.7 1.7 0 0 0-.34 1.9V10.5a1.7 1.7 0 0 0 1.55 1H19.6a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.55 1z">
+          </path>
+        </svg>
+        Settings
+        <span class="soon-badge">Soon</span>
+      </div>
+
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-section-label">Quick access</div>
+      <div class="quick-list" id="quickList"></div>
+
+      <div class="sidebar-spacer"></div>
+
+      <div class="account-box" id="accountBox"></div>
+    </aside>
+
+    <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
+
+    <!-- ============ MAIN CONTENT ============ -->
+    <div class="main-content">
+
+      <div class="mobile-topbar d-lg-none">
+        <button class="hamburger-btn" onclick="openSidebar()" aria-label="Open menu">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <div class="brand-mobile"><span class="dot"></span> Clearline</div>
+      </div>
+
+      <!-- ============ HOME VIEW ============ -->
+      <div id="homeView">
+        <div class="home-container">
+          <div class="hero-home">
+            <div class="eyebrow mb-2">Weather, at a glance</div>
+            <h1>Where are you checking on today?</h1>
+            <p class="mb-4">Search any city to open its full conditions, forecast, and air quality.</p>
+
+            <div class="search-wrap" style="max-width:520px;">
+              <span class="search-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="7"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+              </span>
+              <input id="searchInput" class="search-input" type="text"
+                placeholder="Search a city — e.g. Tokyo, Nairobi, Lisbon" autocomplete="off">
+              <div id="searchResults" class="search-results"></div>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center justify-content-between mb-3" id="recentAnchor">
+            <div class="section-title">Recently visited</div>
+            <div id="recentCount" class="eyebrow"></div>
+          </div>
+          <div id="recentGrid" class="row g-3 mb-5"></div>
+        </div>
+      </div>
+
+      <!-- ============ LOCATION VIEW ============ -->
+      <div id="locationView">
+        <div class="home-container py-4">
+          <a href="#" class="back-link mb-4" onclick="showHome();return false;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Back to dashboard
+          </a>
+
+          <div id="skyBand" class="sky-band mb-4">
+            <div class="row align-items-center">
+              <div class="col-md-7">
+                <div class="eyebrow-light mb-1" id="locUpdated">Updated just now</div>
+                <div class="place-name" id="locName">—</div>
+                <div class="condition-text mb-2" id="locCondition">—</div>
+                <div class="d-flex align-items-baseline gap-2">
+                  <span class="big-temp mono" id="locTemp">—</span>
+                  <span class="mono" style="font-size:1.1rem;opacity:.85;">°C</span>
+                </div>
+                <div class="mono mt-1" style="font-size:.85rem;opacity:.85;" id="locHiLo">H: — · L: — · Feels like —°
+                </div>
+              </div>
+              <div class="col-md-5 d-flex justify-content-md-end justify-content-start mt-3 mt-md-0">
+                <div class="icon-xl" id="locIconBig"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-4" id="statTiles"></div>
+
+          <div class="row g-4">
+            <div class="col-lg-8">
+              <div class="section-title mb-2">Hourly forecast</div>
+              <div id="hourlyScroll" class="hourly-scroll mb-4"></div>
+
+              <div class="section-title mb-2">7-day forecast</div>
+              <div class="card-flat p-3 mb-4" id="dailyList"></div>
+
+              <div class="section-title mb-2">Map</div>
+              <div class="map-placeholder mb-4">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11z"></path>
+                  <circle cx="12" cy="10" r="2.5"></circle>
+                </svg>
+                <div class="mt-2" style="font-size:.85rem;">Interactive map view is coming soon</div>
+              </div>
+            </div>
+
+            <div class="col-lg-4">
+              <div class="section-title mb-2">Air quality</div>
+              <div class="card-flat p-4 mb-4 aqi-card">
+                <svg id="aqiGauge" width="160" height="90" viewBox="0 0 160 90"></svg>
+                <div class="aqi-value mono" id="aqiValue">—</div>
+                <div class="aqi-label" id="aqiLabel">—</div>
+                <div class="eyebrow mt-1">US AQI</div>
+              </div>
+
+              <div class="section-title mb-2">Sunrise &amp; sunset</div>
+              <div class="card-flat p-4 mb-4">
+                <div class="d-flex justify-content-between mono" style="font-size:.85rem;">
+                  <span id="sunriseTime">—</span>
+                  <span id="sunsetTime">—</span>
+                </div>
+                <svg width="100%" height="60" viewBox="0 0 240 60" class="mt-1" id="sunArc"></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="app-footer">
+        Clearline — a weather dashboard concept · all data shown is sample data
+      </footer>
+    </div>
+  </div>
+
+  <!-- ============ LOGIN MODAL ============ -->
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeLoginModal()" aria-label="Close">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <div class="modal-title">Log in to Clearline</div>
+      <div class="modal-sub">Save locations and preferences across devices.</div>
+      <form id="loginForm" onsubmit="submitLogin(event)">
+        <label class="form-label-sm">Email</label>
+        <input class="form-control-flat" type="email" placeholder="you@example.com" required>
+        <label class="form-label-sm">Password</label>
+        <input class="form-control-flat" type="password" placeholder="••••••••" required>
+        <button type="submit" class="btn-submit">Continue</button>
+      </form>
+      <div class="modal-note">This is a demo — no account is actually created.</div>
+    </div>
+  </div>
+
+  <script>
+    /* ===================== ICON LIBRARY (line icons, 24x24) ===================== */
+    const ICONS = {
+      clear: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="100%" height="100%">
+    <circle cx="12" cy="12" r="4.2"></circle>
+    <line x1="12" y1="2.5" x2="12" y2="5"></line>
+    <line x1="12" y1="19" x2="12" y2="21.5"></line>
+    <line x1="2.5" y1="12" x2="5" y2="12"></line>
+    <line x1="19" y1="12" x2="21.5" y2="12"></line>
+    <line x1="5.1" y1="5.1" x2="6.8" y2="6.8"></line>
+    <line x1="17.2" y1="17.2" x2="18.9" y2="18.9"></line>
+    <line x1="5.1" y1="18.9" x2="6.8" y2="17.2"></line>
+    <line x1="17.2" y1="6.8" x2="18.9" y2="5.1"></line>
+  </svg>`,
+      clouds: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="100%" height="100%">
+    <path d="M6.5 18h10.6a3.4 3.4 0 0 0 .5-6.76A5 5 0 0 0 8 9.6 3.9 3.9 0 0 0 6.5 18z"></path>
+  </svg>`,
+      partly: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="100%" height="100%">
+    <circle cx="7.5" cy="8" r="3"></circle>
+    <line x1="7.5" y1="2.3" x2="7.5" y2="3.6"></line>
+    <line x1="2.3" y1="8" x2="3.6" y2="8"></line>
+    <line x1="3.6" y1="4.1" x2="4.6" y2="5.1"></line>
+    <path d="M9 19h8.6a3.3 3.3 0 0 0 .4-6.58A4.7 4.7 0 0 0 9.4 12.9 3.7 3.7 0 0 0 9 19z"></path>
+  </svg>`,
+      rain: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="100%" height="100%">
+    <path d="M6.5 14h10.6a3.4 3.4 0 0 0 .5-6.76A5 5 0 0 0 8 5.6 3.9 3.9 0 0 0 6.5 14z"></path>
+    <line x1="8" y1="17" x2="7" y2="20"></line>
+    <line x1="12" y1="17" x2="11" y2="20"></line>
+    <line x1="16" y1="17" x2="15" y2="20"></line>
+  </svg>`,
+      snow: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="100%" height="100%">
+    <path d="M6.5 13h10.6a3.4 3.4 0 0 0 .5-6.76A5 5 0 0 0 8 4.6 3.9 3.9 0 0 0 6.5 13z"></path>
+    <line x1="8" y1="17" x2="8" y2="21"></line>
+    <line x1="6.3" y1="18.7" x2="9.7" y2="19.3"></line>
+    <line x1="9.7" y1="18.7" x2="6.3" y2="19.3"></line>
+    <line x1="15" y1="17" x2="15" y2="21"></line>
+    <line x1="13.3" y1="18.7" x2="16.7" y2="19.3"></line>
+    <line x1="16.7" y1="18.7" x2="13.3" y2="19.3"></line>
+  </svg>`,
+      wind: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="100%" height="100%">
+    <path d="M3 8h10.5a2.5 2.5 0 1 0-2.3-3.5"></path>
+    <path d="M3 12h14.5a2.5 2.5 0 1 1-2.3 3.5"></path>
+    <path d="M3 16h7.5a2 2 0 1 1-1.8 2.8"></path>
+  </svg>`,
+      drop: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="100%" height="100%">
+    <path d="M12 3s6 6.8 6 11a6 6 0 0 1-12 0c0-4.2 6-11 6-11z"></path>
+  </svg>`,
+      gauge: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="100%" height="100%">
+    <path d="M4 15a8 8 0 1 1 16 0"></path>
+    <line x1="12" y1="15" x2="15.5" y2="10.5"></line>
+    <circle cx="12" cy="15" r="1"></circle>
+  </svg>`,
+      eye: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="100%" height="100%">
+    <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"></path>
+    <circle cx="12" cy="12" r="2.7"></circle>
+  </svg>`,
+      uv: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="100%" height="100%">
+    <circle cx="12" cy="13" r="4"></circle>
+    <line x1="12" y1="3" x2="12" y2="5.5"></line>
+    <line x1="4.5" y1="7" x2="6.2" y2="8.4"></line>
+    <line x1="19.5" y1="7" x2="17.8" y2="8.4"></line>
+  </svg>`,
+      feels: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="100%" height="100%">
+    <path d="M10 14.3V5a2 2 0 1 1 4 0v9.3a4 4 0 1 1-4 0z"></path>
+  </svg>`
+    };
+
+    function iconMarkup(cond) {
+      return `<div style="width:100%;height:100%;">${ICONS[cond] || ICONS.clear}</div>`;
+    }
+
+    /* ===================== CONDITION THEME (colorful) ===================== */
+    const CONDITION_THEME = {
+      clear: { solid: '#F2A93B', band: 'linear-gradient(135deg,#F2A93B 0%,#EC6A5E 100%)', wash: 'linear-gradient(135deg,#FFF1DA 0%,#FFFFFF 75%)' },
+      partly: { solid: '#2F80D6', band: 'linear-gradient(135deg,#2F80D6 0%,#22A6A0 100%)', wash: 'linear-gradient(135deg,#E7F0FC 0%,#FFFFFF 75%)' },
+      clouds: { solid: '#7C8AA6', band: 'linear-gradient(135deg,#6E7CA0 0%,#9AA6C2 100%)', wash: 'linear-gradient(135deg,#EDEFF6 0%,#FFFFFF 75%)' },
+      rain: { solid: '#2F6FD6', band: 'linear-gradient(135deg,#2F6FD6 0%,#22A6A0 100%)', wash: 'linear-gradient(135deg,#E4EDFB 0%,#FFFFFF 75%)' },
+      snow: { solid: '#22A6A0', band: 'linear-gradient(135deg,#22A6A0 0%,#7C5CFC 100%)', wash: 'linear-gradient(135deg,#E6F8F7 0%,#FFFFFF 75%)' }
+    };
+
+    function condLabel(cond) {
+      return { clear: 'Clear sky', partly: 'Partly cloudy', clouds: 'Cloudy', rain: 'Rain', snow: 'Snow' }[cond] || cond;
+    }
+
+    /* ===================== MOCK DATA ===================== */
+    function mkHourly(baseTemp, cond) {
+      const hours = [];
+      const now = new Date();
+      for (let i = 0; i < 24; i++) {
+        const t = new Date(now.getTime() + i * 3600 * 1000);
+        const label = i === 0 ? 'Now' : t.getHours().toString().padStart(2, '0') + ':00';
+        const drift = Math.sin(i / 24 * Math.PI * 2) * 3.5;
+        hours.push({ time: label, temp: Math.round(baseTemp + drift - 1 + Math.random()), cond: i > 5 && i < 9 ? 'partly' : cond });
+      }
+      return hours;
+    }
+    function mkDaily(baseHi, baseLo, cond) {
+      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const today = new Date().getDay();
+      const conds = ['clear', 'partly', 'clouds', 'rain', 'snow'];
+      return Array.from({ length: 7 }).map((_, i) => {
+        const d = days[(today + i) % 7];
+        return {
+          day: i === 0 ? 'Today' : d,
+          hi: Math.round(baseHi + (Math.random() * 4 - 2)),
+          lo: Math.round(baseLo + (Math.random() * 3 - 1.5)),
+          cond: i === 0 ? cond : conds[Math.floor(Math.random() * conds.length)],
+          pop: Math.round(Math.random() * 60)
+        };
+      });
+    }
+
+    const CITIES = [
+      { id: 'tokyo', name: 'Tokyo', country: 'Japan', temp: 24, cond: 'partly', hi: 27, lo: 19, feels: 25, humidity: 58, wind: 14, windDir: 'NE', pressure: 1013, visibility: 10, uv: 5, aqi: 42, sunrise: '5:12 AM', sunset: '6:48 PM' },
+      { id: 'reykjavik', name: 'Reykjavík', country: 'Iceland', temp: 9, cond: 'rain', hi: 11, lo: 6, feels: 6, humidity: 82, wind: 28, windDir: 'W', pressure: 998, visibility: 6, uv: 1, aqi: 14, sunrise: '5:02 AM', sunset: '9:41 PM' },
+      { id: 'marrakesh', name: 'Marrakesh', country: 'Morocco', temp: 34, cond: 'clear', hi: 37, lo: 22, feels: 36, humidity: 21, wind: 9, windDir: 'N', pressure: 1009, visibility: 10, uv: 9, aqi: 68, sunrise: '6:01 AM', sunset: '7:52 PM' },
+      { id: 'lisbon', name: 'Lisbon', country: 'Portugal', temp: 23, cond: 'clear', hi: 26, lo: 17, feels: 23, humidity: 44, wind: 16, windDir: 'NW', pressure: 1017, visibility: 10, uv: 7, aqi: 31, sunrise: '6:34 AM', sunset: '8:22 PM' },
+      { id: 'nairobi', name: 'Nairobi', country: 'Kenya', temp: 19, cond: 'clouds', hi: 22, lo: 14, feels: 19, humidity: 65, wind: 11, windDir: 'SE', pressure: 1021, visibility: 9, uv: 6, aqi: 38, sunrise: '6:32 AM', sunset: '6:41 PM' },
+      { id: 'toronto', name: 'Toronto', country: 'Canada', temp: 5, cond: 'snow', hi: 6, lo: -2, feels: 1, humidity: 71, wind: 19, windDir: 'NW', pressure: 1005, visibility: 5, uv: 1, aqi: 22, sunrise: '7:22 AM', sunset: '5:03 PM' },
+      { id: 'singapore', name: 'Singapore', country: 'Singapore', temp: 29, cond: 'rain', hi: 31, lo: 26, feels: 33, humidity: 86, wind: 8, windDir: 'S', pressure: 1010, visibility: 8, uv: 8, aqi: 55, sunrise: '6:58 AM', sunset: '7:02 PM' },
+      { id: 'wellington', name: 'Wellington', country: 'New Zealand', temp: 13, cond: 'partly', hi: 15, lo: 9, feels: 11, humidity: 60, wind: 32, windDir: 'S', pressure: 1012, visibility: 10, uv: 3, aqi: 9, sunrise: '7:41 AM', sunset: '5:18 PM' },
+      { id: 'cairo', name: 'Cairo', country: 'Egypt', temp: 33, cond: 'clear', hi: 36, lo: 24, feels: 35, humidity: 26, wind: 12, windDir: 'N', pressure: 1011, visibility: 10, uv: 9, aqi: 74, sunrise: '5:38 AM', sunset: '7:04 PM' },
+      { id: 'oslo', name: 'Oslo', country: 'Norway', temp: 15, cond: 'clouds', hi: 17, lo: 10, feels: 14, humidity: 55, wind: 13, windDir: 'W', pressure: 1016, visibility: 10, uv: 4, aqi: 12, sunrise: '4:48 AM', sunset: '9:58 PM' },
+      { id: 'mumbai', name: 'Mumbai', country: 'India', temp: 28, cond: 'rain', hi: 30, lo: 25, feels: 32, humidity: 88, wind: 17, windDir: 'W', pressure: 1002, visibility: 4, uv: 4, aqi: 91, sunrise: '6:12 AM', sunset: '7:11 PM' },
+      { id: 'santiago', name: 'Santiago', country: 'Chile', temp: 11, cond: 'clear', hi: 14, lo: 4, feels: 10, humidity: 38, wind: 10, windDir: 'S', pressure: 1019, visibility: 10, uv: 4, aqi: 47, sunrise: '7:51 AM', sunset: '6:02 PM' }
+    ];
+    CITIES.forEach(c => {
+      c.hourly = mkHourly(c.temp, c.cond);
+      c.daily = mkDaily(c.hi, c.lo, c.cond);
+    });
+
+    let recentIds = [];   // in-memory only, most-recent first
+    let loggedInUser = null; // { name, email } or null
+
+    /* ===================== SIDEBAR: NAV ===================== */
+    function navClick(key) {
+      ['navDashboard', 'navSaved', 'navMaps', 'navAlerts', 'navSettings'].forEach(id => {
+        document.getElementById(id).classList.remove('active');
+      });
+      if (key === 'dashboard') {
+        document.getElementById('navDashboard').classList.add('active');
+        showHome();
+      } else if (key === 'saved') {
+        document.getElementById('navSaved').classList.add('active');
+        showHome();
+        setTimeout(() => {
+          const el = document.getElementById('recentAnchor');
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 50);
+      } else {
+        // Maps / Alerts / Settings are placeholders for now
+        document.getElementById('nav' + key.charAt(0).toUpperCase() + key.slice(1)).classList.add('active');
+      }
+      closeSidebar();
+    }
+
+    function openSidebar() {
+      document.getElementById('sidebar').classList.add('open');
+      document.getElementById('sidebarBackdrop').classList.add('show');
+    }
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sidebarBackdrop').classList.remove('show');
+    }
+
+    /* ===================== SIDEBAR: QUICK ACCESS ===================== */
+    function renderQuickList() {
+      const wrap = document.getElementById('quickList');
+      if (recentIds.length === 0) {
+        wrap.innerHTML = `<div class="quick-empty">Search a city to pin it here</div>`;
+        return;
+      }
+      wrap.innerHTML = recentIds.slice(0, 5).map(id => {
+        const c = CITIES.find(x => x.id === id);
+        const theme = CONDITION_THEME[c.cond] || CONDITION_THEME.clear;
+        return `
+      <div class="quick-item" onclick="openLocation('${c.id}')">
+        <span class="quick-dot" style="background:${theme.solid};"></span>
+        <span class="qname">${c.name}</span>
+        <span class="qtemp mono">${c.temp}°</span>
+      </div>`;
+      }).join('');
+    }
+
+    /* ===================== SIDEBAR: ACCOUNT / LOGIN ===================== */
+    function renderAccountBox() {
+      const box = document.getElementById('accountBox');
+      if (loggedInUser) {
+        const initials = loggedInUser.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+        box.innerHTML = `
+      <div class="account-row">
+        <div class="avatar filled">${initials}</div>
+        <div>
+          <div class="account-name">${loggedInUser.name}</div>
+          <div class="account-sub">${loggedInUser.email}</div>
+        </div>
+      </div>
+      <span class="link-logout" onclick="logout()">Log out</span>
+    `;
+      } else {
+        box.innerHTML = `
+      <div class="account-row">
+        <div class="avatar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"></circle><path d="M4.5 20a7.5 7.5 0 0 1 15 0"></path></svg>
+        </div>
+        <div>
+          <div class="account-name">Guest</div>
+          <div class="account-sub">Not signed in</div>
+        </div>
+      </div>
+      <button class="btn-login" onclick="openLoginModal()">Log in</button>
+    `;
+      }
+    }
+
+    function openLoginModal() { document.getElementById('loginModal').classList.add('show'); }
+    function closeLoginModal() { document.getElementById('loginModal').classList.remove('show'); }
+    function submitLogin(e) {
+      e.preventDefault();
+      const email = e.target.querySelector('input[type="email"]').value || 'alex@clearline.app';
+      loggedInUser = { name: 'Alex Rivera', email: email };
+      renderAccountBox();
+      closeLoginModal();
+      e.target.reset();
+    }
+    function logout() {
+      loggedInUser = null;
+      renderAccountBox();
+    }
+
+    /* ===================== HOME: SEARCH ===================== */
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value.trim().toLowerCase();
+      if (!q) { searchResults.classList.remove('show'); searchResults.innerHTML = ''; return; }
+      const matches = CITIES.filter(c => c.name.toLowerCase().includes(q) || c.country.toLowerCase().includes(q)).slice(0, 6);
+      if (matches.length === 0) {
+        searchResults.innerHTML = `<div class="search-result-item text-muted">No matching cities in sample data</div>`;
+      } else {
+        searchResults.innerHTML = matches.map(c => `
+      <div class="search-result-item" onclick="openLocation('${c.id}')">
+        <span>${c.name}</span>
+        <span class="country">${c.country}</span>
+      </div>
+    `).join('');
+      }
+      searchResults.classList.add('show');
+    });
+
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const q = searchInput.value.trim().toLowerCase();
+        const match = CITIES.find(c => c.name.toLowerCase() === q) ||
+          CITIES.find(c => c.name.toLowerCase().includes(q));
+        if (match) openLocation(match.id);
+      }
+    });
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.search-wrap')) searchResults.classList.remove('show');
+    });
+
+    /* ===================== RECENTLY VISITED (main grid) ===================== */
+    function renderRecent() {
+      const grid = document.getElementById('recentGrid');
+      const count = document.getElementById('recentCount');
+      count.textContent = recentIds.length ? `${recentIds.length} location${recentIds.length > 1 ? 's' : ''}` : '';
+
+      if (recentIds.length === 0) {
+        grid.innerHTML = `
+      <div class="col-12">
+        <div class="empty-state">
+          <div class="mb-1" style="font-weight:600;color:var(--ink);">Nothing here yet</div>
+          <div style="font-size:.9rem;">Search a city above to start tracking it here.</div>
+        </div>
+      </div>`;
+        return;
+      }
+
+      grid.innerHTML = recentIds.map(id => {
+        const c = CITIES.find(x => x.id === id);
+        const theme = CONDITION_THEME[c.cond] || CONDITION_THEME.clear;
+        return `
+      <div class="col-6 col-md-4 col-lg-3">
+        <div class="recent-card" style="background:${theme.wash};" onclick="openLocation('${c.id}')">
+          <button class="remove-btn" onclick="event.stopPropagation(); removeRecent('${c.id}')" aria-label="Remove ${c.name}">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div style="font-weight:600;font-size:.95rem;">${c.name}</div>
+              <div class="eyebrow">${c.country}</div>
+            </div>
+            <div class="icon-wrap" style="background:${theme.solid};">${iconMarkup(c.cond)}</div>
+          </div>
+          <div class="temp mono mt-2">${c.temp}°</div>
+          <div class="eyebrow" style="text-transform:capitalize;">${condLabel(c.cond)}</div>
+        </div>
+      </div>`;
+      }).join('');
+    }
+
+    function removeRecent(id) {
+      recentIds = recentIds.filter(x => x !== id);
+      renderRecent();
+      renderQuickList();
+    }
+
+    /* ===================== LOCATION VIEW ===================== */
+    function openLocation(id) {
+      const c = CITIES.find(x => x.id === id);
+      if (!c) return;
+
+      recentIds = recentIds.filter(x => x !== id);
+      recentIds.unshift(id);
+      if (recentIds.length > 6) recentIds = recentIds.slice(0, 6);
+
+      searchInput.value = '';
+      searchResults.classList.remove('show');
+
+      renderLocation(c);
+      renderQuickList();
+      document.getElementById('homeView').style.display = 'none';
+      document.getElementById('locationView').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      closeSidebar();
+    }
+
+    function showHome() {
+      renderRecent();
+      renderQuickList();
+      document.getElementById('locationView').style.display = 'none';
+      document.getElementById('homeView').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+
+    function renderLocation(c) {
+      const theme = CONDITION_THEME[c.cond] || CONDITION_THEME.clear;
+      document.getElementById('skyBand').style.background = theme.band;
+      document.getElementById('locUpdated').textContent = 'Updated just now';
+      document.getElementById('locName').textContent = `${c.name}, ${c.country}`;
+      document.getElementById('locCondition').textContent = condLabel(c.cond);
+      document.getElementById('locTemp').textContent = c.temp;
+      document.getElementById('locHiLo').textContent = `H: ${c.hi}° · L: ${c.lo}° · Feels like ${c.feels}°`;
+      document.getElementById('locIconBig').innerHTML = iconMarkup(c.cond);
+
+      const tiles = [
+        { label: 'Feels like', value: `${c.feels}°`, icon: 'feels', color: '#EC6A5E' },
+        { label: 'Humidity', value: `${c.humidity}%`, icon: 'drop', color: '#2F80D6' },
+        { label: 'Wind', value: `${c.wind} km/h ${c.windDir}`, icon: 'wind', color: '#22A6A0' },
+        { label: 'Pressure', value: `${c.pressure} hPa`, icon: 'gauge', color: '#7C5CFC' },
+        { label: 'Visibility', value: `${c.visibility} km`, icon: 'eye', color: '#5C7AA6' },
+        { label: 'UV Index', value: `${c.uv}`, icon: 'uv', color: '#F2A93B' },
+      ];
+      document.getElementById('statTiles').innerHTML = tiles.map(t => `
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="stat-tile h-100">
+        <div class="stat-icon-chip" style="background:${t.color};width:16px;height:16px;padding:7px;">${ICONS[t.icon]}</div>
+        <div class="stat-label">${t.label}</div>
+        <div class="stat-value mono">${t.value}</div>
+      </div>
+    </div>
+  `).join('');
+
+      document.getElementById('hourlyScroll').innerHTML = c.hourly.map(h => {
+        const ht = CONDITION_THEME[h.cond] || CONDITION_THEME.clear;
+        return `
+    <div class="hour-card">
+      <div class="time">${h.time}</div>
+      <div class="icon-mini" style="color:${ht.solid};">${ICONS[h.cond] || ICONS.clear}</div>
+      <div class="temp mono">${h.temp}°</div>
+    </div>`;
+      }).join('');
+
+      const allTemps = c.daily.flatMap(d => [d.hi, d.lo]);
+      const minT = Math.min(...allTemps), maxT = Math.max(...allTemps);
+      document.getElementById('dailyList').innerHTML = c.daily.map(d => {
+        const left = ((d.lo - minT) / (maxT - minT || 1)) * 100;
+        const width = ((d.hi - d.lo) / (maxT - minT || 1)) * 100;
+        const dt = CONDITION_THEME[d.cond] || CONDITION_THEME.clear;
+        return `
+      <div class="day-row">
+        <div class="day-name">${d.day}</div>
+        <div class="day-cond" style="color:${dt.solid};">${ICONS[d.cond] || ICONS.clear}</div>
+        <div class="lo mono">${d.lo}°</div>
+        <div class="range-bar"><div class="range-fill" style="left:${left}%;width:${Math.max(width, 6)}%;"></div></div>
+        <div class="hi mono">${d.hi}°</div>
+        <div class="pop">${d.pop}%</div>
+      </div>`;
+      }).join('');
+
+      renderAqiGauge(c.aqi);
+      document.getElementById('sunriseTime').textContent = c.sunrise;
+      document.getElementById('sunsetTime').textContent = c.sunset;
+      renderSunArc();
+    }
+
+    function aqiCategory(aqi) {
+      if (aqi <= 50) return { label: 'Good', color: 'var(--good)' };
+      if (aqi <= 100) return { label: 'Moderate', color: 'var(--moderate)' };
+      return { label: 'Unhealthy', color: 'var(--unhealthy)' };
+    }
+
+    function renderAqiGauge(aqi) {
+      const cat = aqiCategory(aqi);
+      document.getElementById('aqiValue').textContent = aqi;
+      document.getElementById('aqiValue').style.color = cat.color;
+      document.getElementById('aqiLabel').textContent = cat.label;
+      document.getElementById('aqiLabel').style.color = cat.color;
+
+      const cx = 80, cy = 80, r = 64;
+      const pct = Math.min(aqi / 150, 1);
+      const angle = Math.PI - pct * Math.PI;
+      const nx = cx + r * Math.cos(angle);
+      const ny = cy - r * Math.sin(angle);
+
+      const arc = (start, end, color) => {
+        const a1 = Math.PI - start * Math.PI;
+        const a2 = Math.PI - end * Math.PI;
+        const x1 = cx + r * Math.cos(a1), y1 = cy - r * Math.sin(a1);
+        const x2 = cx + r * Math.cos(a2), y2 = cy - r * Math.sin(a2);
+        return `<path d="M ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2}" stroke="${color}" stroke-width="10" fill="none" stroke-linecap="round"/>`;
+      };
+
+      document.getElementById('aqiGauge').innerHTML = `
+    ${arc(0, 0.33, '#3FA66B')}
+    ${arc(0.33, 0.66, '#F2A93B')}
+    ${arc(0.66, 1, '#EC6A5E')}
+    <line x1="${cx}" y1="${cy}" x2="${nx}" y2="${ny}" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="${cx}" cy="${cy}" r="4" fill="var(--ink)"/>
+  `;
+    }
+
+    function renderSunArc() {
+      document.getElementById('sunArc').innerHTML = `
+    <path d="M 10 50 Q 120 -10 230 50" stroke="var(--line)" stroke-width="2" fill="none"/>
+    <path d="M 10 50 Q 120 -10 230 50" stroke="var(--amber)" stroke-width="2" fill="none" stroke-dasharray="220" stroke-dashoffset="90"/>
+    <circle cx="120" cy="4" r="5" fill="var(--amber)"/>
+  `;
+    }
+
+    /* ===================== INIT ===================== */
+    renderRecent();
+    renderQuickList();
+    renderAccountBox();
+  </script>
+</body>
+
+</html>

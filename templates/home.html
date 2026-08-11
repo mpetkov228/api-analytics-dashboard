@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Weather Dashboard</title>
+</head>
+<body>
+    <h1>Current Weather</h1>
+    {% for location in locations %}
+        <p>{{ location.name }} - {{ location.temp }}</p>
+    {% endfor %}
+</body>
+</html>
