@@ -32,6 +32,11 @@ def home(request: Request):
     return templates.TemplateResponse(request, "home.html", {"locations": locations})
 
 
+@app.get("/saved", include_in_schema=False)
+def saved(request: Request):
+    return templates.TemplateResponse(request, "saved.html")
+
+
 @app.get("/api/locations")
 def get_locations():
     return locations
