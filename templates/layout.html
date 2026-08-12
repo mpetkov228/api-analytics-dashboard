@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clearline — Weather Dashboard</title>
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-shell">
+
+        <!-- ============ SIDEBAR ============ -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <span class="dot"></span> Clearline
+            </div>
+
+            <div class="sidebar-section-label">Navigate</div>
+            <div class="nav-item active" id="navDashboard" onclick="navClick('dashboard')">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 10.5 12 3l9 7.5"></path>
+                    <path d="M5 9.5V21h14V9.5"></path>
+                </svg>
+                Dashboard
+            </div>
+            <div class="nav-item" id="navSaved" onclick="navClick('saved')">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 3.5h12v18l-6-4-6 4v-18z"></path>
+                </svg>
+                Saved Locations
+            </div>
+            <div class="nav-item" id="navMaps" onclick="navClick('maps')">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 4 3 6.5v14L9 18l6 2.5 6-2.5v-14L15 6.5 9 4z"></path>
+                    <line x1="9" y1="4" x2="9" y2="18"></line>
+                    <line x1="15" y1="6.5" x2="15" y2="20.5"></line>
+                </svg>
+                Weather Maps
+                <span class="soon-badge">Soon</span>
+            </div>
+            <div class="nav-item" id="navAlerts" onclick="navClick('alerts')">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 10a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 14 6 10z"></path>
+                    <path d="M10 19a2 2 0 0 0 4 0"></path>
+                </svg>
+                Alerts
+                <span class="soon-badge">Soon</span>
+            </div>
+            <div class="nav-item" id="navSettings" onclick="navClick('settings')">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path
+                        d="M19.4 13.5a1.7 1.7 0 0 0 .34 1.9l.06.06a2 2 0 1 1-2.9 2.9l-.06-.06a1.7 1.7 0 0 0-1.9-.34 1.7 1.7 0 0 0-1 1.55V19.6a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.55 1.7 1.7 0 0 0-1.9.34l-.06.06a2 2 0 1 1-2.9-2.9l.06-.06a1.7 1.7 0 0 0 .34-1.9 1.7 1.7 0 0 0-1.55-1H4.4a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.55-1.1 1.7 1.7 0 0 0-.34-1.9l-.06-.06a2 2 0 1 1 2.9-2.9l.06.06a1.7 1.7 0 0 0 1.9.34H10.5a1.7 1.7 0 0 0 1-1.55V4.4a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.9-.34l.06-.06a2 2 0 1 1 2.9 2.9l-.06.06a1.7 1.7 0 0 0-.34 1.9V10.5a1.7 1.7 0 0 0 1.55 1H19.6a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.55 1z">
+                    </path>
+                </svg>
+                Settings
+                <span class="soon-badge">Soon</span>
+            </div>
+
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-section-label">Quick access</div>
+            <div class="quick-list" id="quickList"></div>
+
+            <div class="sidebar-spacer"></div>
+
+            <div class="account-box" id="accountBox"></div>
+        </aside>
+
+        <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
+
+        <!-- ============ MAIN CONTENT ============ -->
+        <div class="main-content">
+
+            {% block content %}
+            {% endblock content %}
+
+            <!-- <div class="mobile-topbar d-lg-none">
+                <button class="hamburger-btn" onclick="openSidebar()" aria-label="Open menu">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round">
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+                <div class="brand-mobile"><span class="dot"></span> Clearline</div>
+            </div> -->
+
+            <!-- ============ HOME VIEW ============ -->
+            <!-- <div id="homeView">
+                <div class="home-container">
+                    <div class="hero-home">
+                        <div class="eyebrow mb-2">Weather, at a glance</div>
+                        <h1>Where are you checking on today?</h1>
+                        <p class="mb-4">Search any city to open its full conditions, forecast, and air quality.</p>
+
+                        <div class="search-wrap" style="max-width:520px;">
+                            <span class="search-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="7"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                            </span>
+                            <input id="searchInput" class="search-input" type="text"
+                                placeholder="Search a city — e.g. Tokyo, Nairobi, Lisbon" autocomplete="off">
+                            <div id="searchResults" class="search-results"></div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-between mb-3" id="recentAnchor">
+                        <div class="section-title">Recently visited</div>
+                        <div id="recentCount" class="eyebrow"></div>
+                    </div>
+                    <div id="recentGrid" class="row g-3 mb-5"></div>
+                </div>
+            </div> -->
+
+            <!-- ============ LOCATION VIEW ============ -->
+            <!-- <div id="locationView">
+                <div class="home-container py-4">
+                    <a href="#" class="back-link mb-4" onclick="showHome();return false;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12 19 5 12 12 5"></polyline>
+                        </svg>
+                        Back to dashboard
+                    </a>
+
+                    <div id="skyBand" class="sky-band mb-4">
+                        <div class="row align-items-center">
+                            <div class="col-md-7">
+                                <div class="eyebrow-light mb-1" id="locUpdated">Updated just now</div>
+                                <div class="place-name" id="locName">—</div>
+                                <div class="condition-text mb-2" id="locCondition">—</div>
+                                <div class="d-flex align-items-baseline gap-2">
+                                    <span class="big-temp mono" id="locTemp">—</span>
+                                    <span class="mono" style="font-size:1.1rem;opacity:.85;">°C</span>
+                                </div>
+                                <div class="mono mt-1" style="font-size:.85rem;opacity:.85;" id="locHiLo">H: — · L: — ·
+                                    Feels like —°
+                                </div>
+                            </div>
+                            <div class="col-md-5 d-flex justify-content-md-end justify-content-start mt-3 mt-md-0">
+                                <div class="icon-xl" id="locIconBig"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4" id="statTiles"></div>
+
+                    <div class="row g-4">
+                        <div class="col-lg-8">
+                            <div class="section-title mb-2">Hourly forecast</div>
+                            <div id="hourlyScroll" class="hourly-scroll mb-4"></div>
+
+                            <div class="section-title mb-2">7-day forecast</div>
+                            <div class="card-flat p-3 mb-4" id="dailyList"></div>
+
+                            <div class="section-title mb-2">Map</div>
+                            <div class="map-placeholder mb-4">
+                                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11z"></path>
+                                    <circle cx="12" cy="10" r="2.5"></circle>
+                                </svg>
+                                <div class="mt-2" style="font-size:.85rem;">Interactive map view is coming soon</div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <div class="section-title mb-2">Air quality</div>
+                            <div class="card-flat p-4 mb-4 aqi-card">
+                                <svg id="aqiGauge" width="160" height="90" viewBox="0 0 160 90"></svg>
+                                <div class="aqi-value mono" id="aqiValue">—</div>
+                                <div class="aqi-label" id="aqiLabel">—</div>
+                                <div class="eyebrow mt-1">US AQI</div>
+                            </div>
+
+                            <div class="section-title mb-2">Sunrise &amp; sunset</div>
+                            <div class="card-flat p-4 mb-4">
+                                <div class="d-flex justify-content-between mono" style="font-size:.85rem;">
+                                    <span id="sunriseTime">—</span>
+                                    <span id="sunsetTime">—</span>
+                                </div>
+                                <svg width="100%" height="60" viewBox="0 0 240 60" class="mt-1" id="sunArc"></svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> -->
+
+            <footer class="app-footer">
+                Clearline — a weather dashboard concept · all data shown is sample data
+            </footer>
+        </div>
+    </div>
+</body>
+
+</html>
