@@ -60,6 +60,15 @@ def saved(request: Request):
     return templates.TemplateResponse(request, "saved.html")
 
 
+@app.get("/locations/{location_id}", include_in_schema=False)
+def location_page(request: Request, location_id: str):
+    for location in locations:
+        if location.get("id") == location_id:
+            return templates.TemplateResponse(request, "location.html", {"location": location})
+
+    return {"message": "Location not found"}
+
+
 @app.get("/api/locations")
 def get_locations():
     return locations

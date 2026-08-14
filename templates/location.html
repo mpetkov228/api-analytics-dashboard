@@ -1,0 +1,76 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1>{{ location.name }}</h1>
+    <div id="locationView">
+        <div class="home-container py-4">
+          <a href="#" class="back-link mb-4">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Back to dashboard
+          </a>
+
+          <div id="skyBand" class="sky-band mb-4">
+            <div class="row align-items-center">
+              <div class="col-md-7">
+                <div class="eyebrow-light mb-1" id="locUpdated">Updated just now</div>
+                <div class="place-name" id="locName">{{ location.name }}</div>
+                <div class="condition-text mb-2" id="locCondition">{{ location.cond }}</div>
+                <div class="d-flex align-items-baseline gap-2">
+                  <span class="big-temp mono" id="locTemp">—</span>
+                  <span class="mono" style="font-size:1.1rem;opacity:.85;">°C</span>
+                </div>
+                <div class="mono mt-1" style="font-size:.85rem;opacity:.85;" id="locHiLo">H: — · L: — · Feels like —°
+                </div>
+              </div>
+              <div class="col-md-5 d-flex justify-content-md-end justify-content-start mt-3 mt-md-0">
+                <div class="icon-xl" id="locIconBig"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-4" id="statTiles"></div>
+
+          <div class="row g-4">
+            <div class="col-lg-8">
+              <div class="section-title mb-2">Hourly forecast</div>
+              <div id="hourlyScroll" class="hourly-scroll mb-4"></div>
+
+              <div class="section-title mb-2">7-day forecast</div>
+              <div class="card-flat p-3 mb-4" id="dailyList"></div>
+
+              <div class="section-title mb-2">Map</div>
+              <div class="map-placeholder mb-4">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11z"></path>
+                  <circle cx="12" cy="10" r="2.5"></circle>
+                </svg>
+                <div class="mt-2" style="font-size:.85rem;">Interactive map view is coming soon</div>
+              </div>
+            </div>
+
+            <div class="col-lg-4">
+              <div class="section-title mb-2">Air quality</div>
+              <div class="card-flat p-4 mb-4 aqi-card">
+                <svg id="aqiGauge" width="160" height="90" viewBox="0 0 160 90"></svg>
+                <div class="aqi-value mono" id="aqiValue">—</div>
+                <div class="aqi-label" id="aqiLabel">—</div>
+                <div class="eyebrow mt-1">US AQI</div>
+              </div>
+
+              <div class="section-title mb-2">Sunrise &amp; sunset</div>
+              <div class="card-flat p-4 mb-4">
+                <div class="d-flex justify-content-between mono" style="font-size:.85rem;">
+                  <span id="sunriseTime">—</span>
+                  <span id="sunsetTime">—</span>
+                </div>
+                <svg width="100%" height="60" viewBox="0 0 240 60" class="mt-1" id="sunArc"></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+{% endblock content %}
