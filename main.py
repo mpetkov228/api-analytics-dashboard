@@ -9,19 +9,42 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 locations: list[dict] = [
-    {
-        "id": 1,
-        "name": "London",
-        "temp": "21°c",
-        "precip": "15%",
-        "weather_phrase": "Cloudy"
+    { 
+        "id": 'tokyo', 
+        "name": 'Tokyo', 
+        "country": 'Japan', 
+        "temp": 24, 
+        "cond": 'partly', 
+        "hi": 27, "lo": 19, 
+        "feels": 25, 
+        "humidity": 58, 
+        "wind": 14, 
+        "windDir": 'NE', 
+        "pressure": 1013, 
+        "visibility": 10, 
+        "uv": 5, 
+        "aqi": 42, 
+        "sunrise": '5:12 AM', 
+        "sunset": '6:48 PM' 
     },
     {
-        "id": 2,
-        "name": "Burgas",
-        "temp": "29°c",
-        "precip": "0%",
-        "weather_phrase": "Sunny"
+        "id": 'reykjavik', 
+        "name": 'Reykjavík', 
+        "country": 'Iceland', 
+        "temp": 9, 
+        "cond": 'rain', 
+        "hi": 11, 
+        "lo": 6, 
+        "feels": 6, 
+        "humidity": 82, 
+        "wind": 28, 
+        "windDir": 'W', 
+        "pressure": 998, 
+        "visibility": 6, 
+        "uv": 1, 
+        "aqi": 14, 
+        "sunrise": '5:02 AM', 
+        "sunset": '9:41 PM' 
     },
 ]
 
