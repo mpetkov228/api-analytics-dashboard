@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException, status
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -15,7 +15,8 @@ locations: list[dict] = [
         "country": 'Japan', 
         "temp": 24, 
         "cond": 'partly', 
-        "hi": 27, "lo": 19, 
+        "hi": 27, 
+        "lo": 19, 
         "feels": 25, 
         "humidity": 58, 
         "wind": 14, 
@@ -64,7 +65,12 @@ def saved(request: Request):
 def location_page(request: Request, location_id: str):
     for location in locations:
         if location.get("id") == location_id:
-            return templates.TemplateResponse(request, "location.html", {"location": location})
+            title = f"{location["name"]}, {location["country"]} Weather"
+            return templates.TemplateResponse(
+                request, 
+                "location.html", 
+                {"location": location, "title": title}
+            )
 
     return {"message": "Location not found"}
 
@@ -72,3 +78,12 @@ def location_page(request: Request, location_id: str):
 @app.get("/api/locations")
 def get_locations():
     return locations
+
+
+@app.get("/api/locations/{location_id}")
+def get_location(location_id: str):
+    for location in locations:
+        if location.get("id") == location_id:
+            return location
+
+    raise HTTPException(status.HTTP_404_NOT_FOUND, "Location not found")

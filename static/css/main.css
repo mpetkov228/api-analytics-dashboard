@@ -530,6 +530,7 @@ a {
     overflow: hidden;
     border: 1px solid var(--line);
     color: #fff;
+    background: linear-gradient(135deg, rgb(47, 128, 214) 0%, rgb(34, 166, 160) 100%);
 }
 
 .sky-band .place-name {
@@ -733,10 +734,6 @@ a {
     justify-content: center;
     color: var(--muted);
     background: repeating-linear-gradient(45deg, rgba(47, 128, 214, 0.03) 0 10px, transparent 10px 20px);
-}
-
-#locationView {
-    display: none;
 }
 
 footer.app-footer {
