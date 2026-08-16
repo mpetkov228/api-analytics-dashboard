@@ -1,6 +1,9 @@
 from fastapi import FastAPI, Request, HTTPException, status
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 app = FastAPI()
 
@@ -72,7 +75,7 @@ def location_page(request: Request, location_id: str):
                 {"location": location, "title": title}
             )
 
-    return {"message": "Location not found"}
+    raise HTTPException(status.HTTP_404_NOT_FOUND, "Location not found")
 
 
 @app.get("/api/locations")
@@ -87,3 +90,26 @@ def get_location(location_id: str):
             return location
 
     raise HTTPException(status.HTTP_404_NOT_FOUND, "Location not found")
+
+
+@app.exception_handler(StarletteHTTPException)
+def general_http_exception_handler(request: Request, exception: StarletteHTTPException):
+    message = (
+        exception.detail
+        if exception.detail
+        else "An error occured. Please check your request and try again."
+    )
+
+    if request.url.path.startswith("/api"):
+        return JSONResponse({"detail": message}, exception.status_code)
+
+    return templates.TemplateResponse(
+        request,
+        "error.html",
+        {
+            "status_code": exception.status_code,
+            "title": exception.status_code,
+            "message": message
+        },
+        exception.status_code
+    )
